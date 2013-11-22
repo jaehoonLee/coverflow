@@ -26,13 +26,10 @@ import android.content.Context;
 import android.graphics.Camera;
 import android.graphics.Matrix;
 import android.graphics.Point;
-import android.graphics.RectF;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.animation.Transformation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
@@ -126,9 +123,12 @@ public class PagerContainer extends FrameLayout implements ViewPager.OnPageChang
         if (Math.abs(rotationAngle) > mMaxRotationAngle) {
             rotationAngle = (rotationAngle < 0) ? -mMaxRotationAngle : mMaxRotationAngle;
         }
-        ImageView imageview = (ImageView)mPager.getChildAt(position);
+        FrameLayout frameLayout = (FrameLayout)mPager.getChildAt(position);
+        ImageView imageview = (ImageView)frameLayout.getChildAt(0);
         Log.i("Test", "positino2:" + rotationAngle);
-//        transformImageBitmap((ImageView)imageview , imageview.getImageMatrix(), rotationAngle);
+        
+        
+        transformImageBitmap((ImageView)imageview , imageview.getImageMatrix(), rotationAngle);
 
 //        Matrix m = mPager.getMatrix();
 //        RectF drawableRect = new RectF(0, 0, width - rotationAngle, width - rotationAngle);
@@ -154,19 +154,21 @@ public class PagerContainer extends FrameLayout implements ViewPager.OnPageChang
     private void transformImageBitmap(ImageView child, Matrix imageMatrix, int rotationAngle) {
         mCamera.save();
 //        final Matrix imageMatrix = t.getMatrix();;
-        final int imageHeight = child.getLayoutParams().height;;
+        final int imageHeight = child.getLayoutParams().height;
         final int imageWidth = child.getLayoutParams().width;
         final int rotation = Math.abs(rotationAngle);
 
         //		mCamera.translate(0.0f, 0.0f, 100.0f);
-
+        Log.i("Select", "imageWidth:" + imageWidth + " " + "imageHeight:" + imageHeight);
         //As the angle of the view gets less, zoom in
         //		if ( rotation < mMaxRotationAngle )
         {
             float zoomAmount = (float) (mMaxZoom +  (rotation * 1.5));
-            //			Log.i("Select", "rotation:" + rotation + " zoomAmount:" + zoomAmount);
+            Log.i("Select", "rotation:" + rotation + " zoomAmount:" + zoomAmount);
             mCamera.translate(0.0f, 0.0f, zoomAmount);
         }
+        
+        
 
         //Alpha
         int alphaVal = 255 - rotation * 3;
@@ -177,6 +179,16 @@ public class PagerContainer extends FrameLayout implements ViewPager.OnPageChang
         imageMatrix.preTranslate(-(imageWidth/2), -(imageHeight/2));
         imageMatrix.postTranslate((imageWidth/2), (imageHeight/2));
         mCamera.restore();
+        
+        float[] values = new float[9];
+        imageMatrix.getValues(values);
+		float globalX = values[Matrix.MTRANS_X];
+		float globalY = values[Matrix.MTRANS_Y];
+//		float width = values[Matrix.MSCALE_X]*CommonValue.menuWidth ;
+//		float height = values[Matrix.MSCALE_Y]*CommonValue.menuWidth;
+		values[Matrix.MSCALE_X] = 2;
+		values[Matrix.MSCALE_Y] = 2;
+		imageMatrix.setValues(values);
     }
 
 }
